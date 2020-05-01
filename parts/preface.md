@@ -53,7 +53,7 @@ Constant width
 
 ##Using Code Examples
 
-All [code examples](https://github.com/Artanidos/PythonDesktopBook/) are available on github .
+All [code examples](https://github.com/Artanidos/PythonDesktopBook) are available on github .
 
 ##How To Contact Me
 
