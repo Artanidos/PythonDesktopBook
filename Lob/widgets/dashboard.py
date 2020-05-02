@@ -44,9 +44,6 @@ class Dashboard(QWidget):
         self.browser = QTextBrowser()
         self.browser.setOpenLinks(False)
 
-        self.create_button = FlatButton(":/images/create_normal.png", ":/images/create_hover.png", ":/images/create_pressed.png")
-        self.create_button.setToolTip("Add a client")
-
         self.info = QLabel()
         self.info.setText("Welcome to Lob...")
 
@@ -59,15 +56,8 @@ class Dashboard(QWidget):
         layout.addWidget(title, 0, 0, 1, 3)
         layout.addWidget(self.info, 1, 0, 1, 3)
         layout.addWidget(space, 2, 0)
-        layout.addWidget(self.create_button, 3, 0, 1, 1, Qt.AlignCenter)
        
         vbox.addLayout(layout)
         vbox.addSpacing(40)
         vbox.addWidget(self.browser)
         self.setLayout(vbox)
-
-        self.create_button.clicked.connect(self.createClicked)
-  
-    @pyqtSlot()
-    def createClicked(self):
-        self.createSite.emit()

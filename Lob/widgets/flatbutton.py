@@ -19,51 +19,64 @@
 #
 #############################################################################
 
-from PyQt5.QtWidgets import QLabel, QWidget
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QPixmap, QImage
+import os
+from PyQt5.QtWidgets import QLabel, QWidget, QStyleOption, QStyle
+from PyQt5.QtCore import Qt, pyqtSignal, pyqtProperty, QDir, QFile, QIODevice
+from PyQt5.QtGui import QPixmap, QImage, QPalette, QPainter
+import resources
 
 
 class FlatButton(QLabel):
     clickedWithReturn = pyqtSignal(object)
     clicked = pyqtSignal()
 
-    def __init__(self, normal_icon = ":/images/edit_normal.png", hover_icon = ":/images/edit_normal.png", pressed_icon = "", disabled_icon = ""):
+    def __init__(self, svg):
         QLabel.__init__(self)
-
-        self.enabled = True
+        self.svg = svg
+        self._enabled = True
         self.returncode = ""
-        
-        self.normal_icon = QPixmap.fromImage(QImage(normal_icon))
-        self.hover_icon = QPixmap.fromImage(QImage(hover_icon))
-
-        if not pressed_icon :
-            self.pressed_icon = QPixmap.fromImage(QImage(hover_icon))
-        else:
-            self.pressed_icon = QPixmap.fromImage(QImage(pressed_icon))
-
-        if not disabled_icon:
-            self.disabled_icon = QPixmap.fromImage(QImage(normal_icon))
-        else:
-            self.disabled_icon = QPixmap.fromImage(QImage(disabled_icon))
-
-        self.setPixmap(self.normal_icon)
+        self.setColors()
         self.setCursor(Qt.PointingHandCursor)
 
-    def mousePressEvent(self, event):
+    def setColors(self):
+        self.label_normal_color = self.palette().buttonText().color().name()
+        self.label_hovered_color = self.palette().highlight().color().name()
+        self.label_disabled_color = self.palette().color(QPalette.Disabled, QPalette.ButtonText).name()
+
+        self.normal_icon = QPixmap(self.createIcon(self.svg, self.label_normal_color))
+        self.hover_icon = QPixmap(self.createIcon(self.svg, self.label_hovered_color))
+        self.disabled_icon = QPixmap(self.createIcon(self.svg, self.label_disabled_color))
+
         if self.enabled:
-            self.setPixmap(self.pressed_icon)
+            self.setPixmap(self.normal_icon)
+        else:
+            self.setPixmap(self.disabled_icon)
+
+    def createIcon(self, source, hilite_color):
+        bg = self.palette().button().color().name()
+        temp = QDir.tempPath()
+        file = QFile(source)
+        file.open(QIODevice.ReadOnly | QIODevice.Text)
+        data = str(file.readAll(), encoding="utf-8")
+        file.close()
+
+        out = os.path.join(temp, hilite_color + ".svg")
+        with open(out, "w") as fp:
+            fp.write(data.replace("#ff00ff", hilite_color).replace("#0000ff", bg))
+        return out
+
+    def mousePressEvent(self, event):
         self.setFocus()
         event.accept()
 
     def mouseReleaseEvent(self, event):
         if self.enabled:
             self.setPixmap(self.hover_icon)
-        event.accept()
-        if not self.returncode:
-            self.clicked.emit()
-        else:
-            self.clickedWithReturn.emit(self.returncode)
+            event.accept()
+            if not self.returncode:
+                self.clicked.emit()
+            else:
+                self.clickedWithReturn.emit(self.returncode)
 
     def enterEvent(self, event):
         if self.enabled:
@@ -73,19 +86,19 @@ class FlatButton(QLabel):
     def leaveEvent(self, event):
         if self.enabled:
             self.setPixmap(self.normal_icon)
+        else:
+            self.setPixmap(self.disabled_icon)
         QWidget.leaveEvent(self, event)
 
-    def setNormalPixmap(self, pm):
-        self.normal_icon = pm
-        if not self.disabled_icon:
-            self.disabled_icon = pm
-        if not self.pressed_icon:
-            self.pressed_icon = pm
-        if not self.hover_icon:
-            self.hover_icon = pm
-        self.setPixmap(self.normal_icon)
+    @pyqtProperty(bool)
+    def enabled(self):
+        return self._enabled
 
-    def setHoverPixmap(self, pm):
-        self.hover_icon = pm
-        if not self.pressed_icon:
-            self.pressed_icon = pm
+    @enabled.setter
+    def enabled(self, enabled):
+        self._enabled = enabled
+        if enabled:
+            self.setPixmap(self.normal_icon)
+        else:
+            self.setPixmap(self.disabled_icon)
+        self.update()

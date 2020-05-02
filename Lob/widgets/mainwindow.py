@@ -34,18 +34,18 @@ from widgets.dashboard import Dashboard
 from widgets.settingseditor import SettingsEditor
 from widgets.clienteditor import ClientEditor
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QSizePolicy, QMessageBox, QVBoxLayout, QMainWindow, QWidget, QScrollArea, QDockWidget, QUndoStack, QApplication, QLabel, QLineEdit
-from PyQt5.QtCore import pyqtSignal, Qt, QUrl, QRect, QCoreApplication, QDir, QSettings, QByteArray, QEvent, QPoint, QAbstractAnimation, QPropertyAnimation
+from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QSizePolicy, QMessageBox, QHBoxLayout, QVBoxLayout, QMainWindow, QWidget, QScrollArea, QDockWidget, QUndoStack, QApplication, QLabel, QLineEdit
+from PyQt5.QtCore import pyqtSignal, Qt, QUrl, QRect, QCoreApplication, QDir, QSettings, QByteArray, QEvent, QPoint
 from PyQt5.QtQml import QQmlEngine, QQmlComponent
 
 import resources
 
 class MainWindow(QMainWindow):
-    siteLoaded = pyqtSignal(object)
-
     def __init__(self, app):
         QMainWindow.__init__(self)
         self.app = app
+        self.clients = None
+        
         self.initGui()
         self.readSettings()
         self.dashboard.setExpanded(True)
@@ -55,7 +55,6 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage("Ready")
     
     def initGui(self):
-        self.installEventFilter(self)
         self.dashboard = Expander("Dashboard", ":/images/dashboard_normal.png", ":/images/dashboard_hover.png", ":/images/dashboard_selected.png")
         self.content = Expander("Clients", ":/images/clients_normal.png", ":/images/clients_hover.png", ":/images/clients_selected.png")
         self.settings = Expander("Settings", ":/images/settings_normal.png", ":/images/settings_hover.png", ":/images/settings_selected.png")
@@ -75,9 +74,16 @@ class MainWindow(QMainWindow):
         self.client_list.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Fixed)
         self.client_list.currentItemChanged.connect(self.clientChanged)
         
+        button_layout = QHBoxLayout()
+        plus_button = FlatButton(":/images/plus.svg")
+        self.trash_button = FlatButton(":/images/trash.svg")
+        self.trash_button.enabled = False
+        button_layout.addWidget(plus_button)
+        button_layout.addWidget(self.trash_button)
         content_box.addWidget(filter_label)
         content_box.addWidget(self.filter)
         content_box.addWidget(self.client_list)
+        content_box.addLayout(button_layout)
         self.content.addLayout(content_box)
 
         scroll_content = QWidget()
@@ -97,9 +103,12 @@ class MainWindow(QMainWindow):
 
         self.addDockWidget(Qt.LeftDockWidgetArea, self.navigationdock)
 
-        self.showDock = FlatButton(":/images/edit_normal.png", ":/images/edit_hover.png")
+        self.showDock = FlatButton(":/images/menu.svg")
         self.showDock.setToolTip("Show Navigation")
         self.statusBar().addPermanentWidget(self.showDock)
+
+        plus_button.clicked.connect(self.addClient)
+        self.trash_button.clicked.connect(self.deleteClient)
 
         self.dashboard.expanded.connect(self.dashboardExpanded)
         self.dashboard.clicked.connect(self.showDashboard)
@@ -113,7 +122,7 @@ class MainWindow(QMainWindow):
         self.navigationdock.visibilityChanged.connect(self.dockVisibilityChanged)
 
         self.client = None
-        self.client_editor = ClientEditor(self)
+        self.client_editor = None
 
     def showDashboard(self):
         db = Dashboard()
@@ -121,16 +130,12 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(db)
 
     def showClient(self):
+        self.client_editor = ClientEditor(self)
         self.setCentralWidget(self.client_editor)
 
     def showSettings(self):
         s = SettingsEditor(self)
         self.setCentralWidget(s)
-
-    def setCentralWidget(self, widget):
-        old_widget = self.takeCentralWidget()
-        super().setCentralWidget(widget)
-        widget.show()
 
     def closeEvent(self, event):
         self.writeSettings()
@@ -184,80 +189,19 @@ class MainWindow(QMainWindow):
     def dockVisibilityChanged(self, visible):
         self.showDock.setVisible(not visible)
 
-    def animate(self, item):
-        panel = self.centralWidget()
-        self.list = item.tableWidget()
-        self.row = item.row()
-
-        # create a cell widget to get the right position in the table
-        self.cellWidget = QWidget()
-        self.cellWidget.setMaximumHeight(0)
-        self.list.setCellWidget(self.row, 1, self.cellWidget)
-        pos = self.cellWidget.mapTo(panel, QPoint(0, 0))
-
-        self.editor.setParent(panel)
-        self.editor.move(pos)
-        self.editor.resize(self.cellWidget.size())
-        self.editor.show()
-
-        self.animation = QPropertyAnimation(self.editor, "geometry".encode("utf-8"))
-        self.animation.setDuration(300)
-        self.animation.setStartValue(QRect(pos.x(), pos.y(), self.cellWidget.size().width(), self.cellWidget.size().height()))
-        self.animation.setEndValue(QRect(0, 0, panel.size().width(), panel.size().height()))
-        self.animation.start()
-
-    def editorClosed(self):
-        pos = self.cellWidget.mapTo(self.centralWidget(), QPoint(0, 0))
-        # correct end values in case of resizing the window
-        self.animation.setStartValue(QRect(pos.x(), pos.y(), self.cellWidget.size().width(), self.cellWidget.size().height()))
-        self.animation.finished.connect(self.animationFineshedZoomOut)
-        self.animation.setDirection(QAbstractAnimation.Backward)
-        self.animation.start()
-
-    def animationFineshedZoomOut(self):
-        self.list.removeCellWidget(self.row, 1)
-        del self.animation
-
-        list = self.centralWidget()
-        if list is MenuEditor:
-            list.unregisterMenuEditor()
-
-        del self.editor
-        self.editor = None
-
-        if self.method_after_animation == "showDashboard":
-            self.showDashboard()
-            self.method_after_animation = ""
-        elif self.method_after_animation == "showSettings":
-            self.showSettings()
-
-        if self.content_after_animation:
-            self.previewSite(self.content_after_animation)
-            self.content_after_animation = None
-
     def filterChanged(self):
         self.loadClients()
 
-    def loadDatabase(self):
-        self.db = TinyDB(os.path.join(self.database,"lob.json"))
-        self.clients = self.db.table('Clients')
-
-    def updateClient(self):
-        for i in range(self.client_list.count()):
-            item = self.client_list.item(i)
-            c = item.data(3)
-            if c.doc_id == self.client.doc_id:
-                item.setData(3, self.client)
-                item.setText(self.client["name"])
-                break
-
     def loadClients(self):
+        if not self.clients:
+            return
+
         self.client_list.clear()
         filter = self.filter.text()
         
         a = []
         for c in self.clients:
-            if filter in c["name"]:
+            if filter.lower() in c["name"].lower():
                 a.append(c)
 
         s = sorted(a, key=namesort)
@@ -290,14 +234,37 @@ class MainWindow(QMainWindow):
         self.client["name"] = ""
         self.client_editor.reload()
         
+    def deleteClient(self):
+        self.clients.remove(doc_ids=[self.client.doc_id])
+        self.loadClients()
+
+    def loadDatabase(self):
+        try:
+            self.db = TinyDB(os.path.join(self.database,"lob.json"))
+            self.clients = self.db.table('Clients')
+        except:
+            print("Unable to openthe database")
+
+    def updateClient(self):
+        for i in range(self.client_list.count()):
+            item = self.client_list.item(i)
+            c = item.data(3)
+            if c.doc_id == self.client.doc_id:
+                item.setData(3, self.client)
+                item.setText(self.client["name"])
+                break
 
     def clientChanged(self, item):
         if item:
             self.client = item.data(3)
-            self.client_editor.reload()
+            if self.client_editor:
+                self.client_editor.reload()
+            self.trash_button.enabled = True
         else:
             self.client = None
             self.client_editor.reload()
+            self.trash_button.enabled = False
+
 
 def namesort(json):
     try:

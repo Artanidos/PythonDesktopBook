@@ -15,7 +15,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.92.4 (unknown)"
-   sodipodi:docname="icon.svg"
+   sodipodi:docname="logo.svg"
    inkscape:export-filename="/home/olaf/Dokumente/FlatSiteBuilder/images/logo.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
@@ -29,7 +29,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.7043664"
-     inkscape:cx="109.57568"
+     inkscape:cx="148.05899"
      inkscape:cy="150.05007"
      inkscape:document-units="px"
      inkscape:current-layer="g4156"
@@ -83,17 +83,17 @@
          id="rect4184"
          style="opacity:1;fill:#800080;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
       <text
-         transform="scale(1.0593227,0.9439994)"
+         transform="scale(0.85693217,1.1669535)"
          id="text4138-3"
-         y="1089.7247"
-         x="3.9971039"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:39.31995392px;line-height:0%;font-family:'Abyssinica SIL';-inkscape-font-specification:'Abyssinica SIL, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ececec;fill-opacity:1;stroke:none;stroke-width:3.27666283px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
+         y="871.94141"
+         x="12.266062"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:23.86944962px;line-height:0%;font-family:'Abyssinica SIL';-inkscape-font-specification:'Abyssinica SIL, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ececec;fill-opacity:1;stroke:none;stroke-width:1.98912072px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          xml:space="preserve"><tspan
-           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:144.24284363px;line-height:125%;font-family:'Abyssinica SIL';-inkscape-font-specification:'Abyssinica SIL, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#ececec;fill-opacity:1;stroke-width:3.27666283px;"
-           y="1089.7247"
-           x="3.9971039"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:87.56361389px;line-height:125%;font-family:'Abyssinica SIL';-inkscape-font-specification:'Abyssinica SIL, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#ececec;fill-opacity:1;stroke-width:1.98912072px"
+           y="871.94141"
+           x="12.266062"
            id="tspan4140-6"
-           sodipodi:role="line">M</tspan></text>
+           sodipodi:role="line">Lob</tspan></text>
     </g>
   </g>
 </svg>

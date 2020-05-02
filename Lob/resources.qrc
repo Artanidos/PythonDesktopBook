@@ -1,7 +1,6 @@
 <RCC>
     <qresource>
-        <file>images/create_hover.png</file>
-        <file>images/create_normal.png</file>
+        <file>images/edit.svg</file>
         <file>images/settings_hover.png</file>
         <file>images/settings_normal.png</file>
         <file>images/settings_selected.png</file>
@@ -12,5 +11,8 @@
         <file>images/clients_normal.png</file>
         <file>images/clients_selected.png</file>
         <file>images/image_placeholder.png</file>
+        <file>images/plus.svg</file>
+        <file>images/trash.svg</file>
+        <file>images/menu.svg</file>
     </qresource>
 </RCC>
