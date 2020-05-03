@@ -398,3 +398,230 @@ When the uses selects another client in the list then the method clientChanged()
 
 ## Client Editor
 This is one of the three screen available to this application.  
+In this screen there is one interesting new part, the imageselector, which is used to select an image for the client to store with its record.  
+```python
+        self.image = ImageSelector()
+        self.image.clicked.connect(self.seek)
+
+    def seek(self):
+        fileName = ""
+        dialog = QFileDialog()
+        dialog.setFileMode(QFileDialog.AnyFile)
+        dialog.setNameFilter("Images (*.png *.gif *.jpg);;All (*)")
+        dialog.setWindowTitle("Load Image")
+        dialog.setOption(QFileDialog.DontUseNativeDialog, True)
+        dialog.setAcceptMode(QFileDialog.AcceptOpen)
+        if dialog.exec():
+            fileName = dialog.selectedFiles()[0]
+        del dialog
+        if not fileName:
+            return
+
+        # copy file to database dir
+        name = os.path.join(str(self.win.client.doc_id) + ".png")
+        path = os.path.join(self.win.database, "images", name)
+        shutil.copy(fileName, path)
+        self.image.setImage(QImage(path))
+        self.clientChanged()
+```
+When the user clicks the imageselector, then the seek method is called.  
+Here we open a file open dialog so the user may choose an image.  
+We are setting a name filter with the following pattern:  
+The name to be display in each line of the filter list, here Images and All. And in brackets we put the filters like (*.png) to list only files that ends with ".png".  
+After the dialog is closed, we choose the first filename from a list.  
+```python
+fileName = dialog.selectedFiles()[0]
+```
+When the user selects a file then we copy it to the images folder and change the name to the doc_id (primary key) + ".png" so we can match this picture to a client record.  
+
+Every time the user alters the data in the edit fields, the clientChanged method is called.  
+```python
+def clientChanged(self):
+        if self.loading:
+            return
+        self.win.client["number"] = self.number.text()
+        self.win.client["name"] = self.name.text()
+        self.win.client["address"] = self.address.text()
+        self.win.client["email"] = self.email.text()
+        self.win.client["mobile"] = self.mobile.text()
+        self.win.client["profession"] = self.profession.text()
+        self.win.client["notes"] = self.notes.toPlainText()
+        self.win.client["birthday_year"] = self.birthday.date().year()
+        self.win.client["birthday_month"] = self.birthday.date().month()
+        self.win.client["birthday_day"] = self.birthday.date().day()
+        self.win.clients.update(self.win.client, doc_ids=[self.win.client.doc_id])
+        self.win.updateClient()
+```
+
+Here we update the client record and send a message to the window so that the list, which displays the clients names, can be updated.  
+
+## Dashboard
+The dashboard is pretty much empty at this moment and can be used later to display some information when the user starts the application.  
+Now it just displays some documentation for the user.  
+
+The documentation is displayed as HTML in a text browser. This textbrowser support hyperlink. So when a user clicks on the hyperlink href='clients' the method navigate is triggert.  
+
+```python
+self.browser.anchorClicked.connect(self.navigate)
+```
+
+In the navigate method we are emitting two signals to call the mainwindow.  
+```python
+    def navigate(self, url):
+        if url.toDisplayString() == "clients":
+            self.clients.emit()
+        elif url.toDisplayString() == "settings":
+            self.settings.emit()
+```
+
+These signals are declared in the body of the class.  
+```python
+class Dashboard(QWidget):
+    clients = pyqtSignal()
+    settings = pyqtSignal()
+```
+And these signals will be connected in the mainwindow in the showDashboard method. 
+
+```python
+    def showDashboard(self):
+        db = Dashboard()
+        db.clients.connect(self.showClient)
+        db.settings.connect(self.showSettings)
+```
+
+So everytime the user clicks on the hyperlink settings then the signal settings is emitted and therfore the connected method showSettings will be called.  
+This terminology is called **Signals and Slots**.  
+The class with the signal just fires the signal and all other objects can connect to this signal and gets the event when it's fired.  
+
+## Settings Editor
+Nothing special here. The only special here is the fact that we change the applications font immediatly when the user enters the fontsize into the fontSize Spinbox.  
+```python
+        self.fontSize.valueChanged.connect(self.settingsChanged)
+
+    def settingsChanged(self):
+        self.win.fontSize = self.fontSize.value()
+        font = QFont("Sans Serif", self.win.fontSize)
+        self.win.app.setFont(font)
+```
+
+## Controls
+Now we come to some user designed controls (widgets).  
+
+### FlatButton
+The FlatButton is just a QLable which we use as a button to display an image. In this case we give the filename of a svg (scalable vector graphics) to the class as an argument. This image has got a region with the special color "#ff00ff" which will be replaced with the highlight color of our app and the color "#0000ff" which will be replaced with the bg color of the button.  
+With this method we are able to change the highlight color of the app and all buttons will change automatically.  
+
+```python
+    def createIcon(self, source, hilite_color):
+        fp.write(data.replace("#ff00ff", hilite_color).replace("#0000ff", bg))
+``` 
+
+In the method setColors we are generating an image for each state of the button. One for normal, one for hovered and one for the disabled state.  
+So when we hover over the button with the mouse we can see the changed color.
+```python
+   def setColors(self):
+        self.label_normal_color = self.palette().buttonText().color().name()
+        self.label_hovered_color = self.palette().highlight().color().name()
+        self.label_disabled_color = self.palette().color(QPalette.Disabled, QPalette.ButtonText).name()
+
+        self.normal_icon = QPixmap(self.createIcon(self.svg, self.label_normal_color))
+        self.hover_icon = QPixmap(self.createIcon(self.svg, self.label_hovered_color))
+        self.disabled_icon = QPixmap(self.createIcon(self.svg, self.label_disabled_color))
+
+        if self.enabled:
+            self.setPixmap(self.normal_icon)
+        else:
+            self.setPixmap(self.disabled_icon)
+```
+
+That means, that we just change the pixmap whenever the enter or the leave event is triggered.  
+```python
+   def enterEvent(self, event):
+        if self.enabled:
+            self.setPixmap(self.hover_icon)
+        QWidget.enterEvent(self, event)
+
+    def leaveEvent(self, event):
+        if self.enabled:
+            self.setPixmap(self.normal_icon)
+        else:
+            self.setPixmap(self.disabled_icon)
+        QWidget.leaveEvent(self, event)
+```
+
+One special behaviour from PyQt5 is the use of properties. They are declared as follows.  
+```python
+    @pyqtProperty(bool)
+    def enabled(self):
+        return self._enabled
+
+    @enabled.setter
+    def enabled(self, enabled):
+        self._enabled = enabled
+        if enabled:
+            self.setPixmap(self.normal_icon)
+        else:
+            self.setPixmap(self.disabled_icon)
+        self.update()
+```
+
+To fire the clicked event we need to declare a signal in the body of the class and we have to emit it when the user clicks the mouse or in this case when the user clicks and releases the mouse.  
+
+```python
+class FlatButton(QLabel):
+    clicked = pyqtSignal()
+
+   def mouseReleaseEvent(self, event):
+        if self.enabled:
+            self.setPixmap(self.hover_icon)
+            event.accept()
+            self.clicked.emit()
+```
+
+### Hyperlink
+The hyperlink is also derived from QLable and uses the ability to display HTML inside a lable.
+Here we override the method setText() and we put the text between HTML syntax, so that the hyperlink will be displyed inside the lable.  
+```python
+   def setText(self, text):
+        self.text = text
+        super().setText("<a style=\"color: " + self.color + "; text-decoration: none; cursor: pointer;\" href=\"#/\">" + self.text + "</a>")
+```
+Nothing special in this class.  
+
+### Expander
+The expander is a bit more tricky.  
+Here we have to animated the behaviour when the user clicks the expander to expand and when the user expands another expander this expander shall collapse.  
+To archive the animation we are using a parallelanmation to animate the property color and the property maximumHeight.
+```python
+        self.anim = QParallelAnimationGroup()
+        self.height_anim = QPropertyAnimation(self.content, "maximumHeight".encode("utf-8"))
+        self.color_anim = QPropertyAnimation(self, "color".encode("utf-8"))
+        self.height_anim.setDuration(200)
+        self.color_anim.setDuration(200)
+        self.anim.addAnimation(self.height_anim)
+        self.anim.addAnimation(self.color_anim)
+```
+
+To be able to animate the color we have to create a property with that name.  
+```python
+    @pyqtProperty('QColor')
+    def color(self):
+        return Qt.black
+
+    @color.setter
+    def color(self, color):
+        pal = self.palette()
+        pal.setColor(QPalette.Background, QColor(color))
+        self.setPalette(pal)
+```
+To be able to display different states we are using PNG images this time. This is just another variation as we used SVG in the FlatButton. This depends on the tools you are using to create icons.  
+I am using Inkscape to create icons, so it makes sense to use SVG files in  general. But if you are only using a pixel based editor the PNG style fits best to you. So you know both methods.  
+
+```python
+self.dashboard = Expander("Dashboard", ":/images/dashboard_normal.png", ":/images/dashboard_hover.png", ":/images/dashboard_selected.png")
+        
+```
+
+## Summary
+You have seen who to create user controls, how to use a database to store data into a file, you have seen how to navigate between screens and you have seen how to create an app without the need to program a popup menu.  
+Nowadays we develop many apps for the tablet instead of the desktop and there we don't use the mouse, so we cannot use the old school popup menu anymore.
