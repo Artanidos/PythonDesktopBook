@@ -80,7 +80,7 @@ Then we are setting the title for the window.
 self.setWindowTitle("Qt Demo")
 ```
 
-And finally we are creating a label and the the label as the main wdget which then will be displayed in the middle of the window.
+And finally we are creating a label and the the label as the main widget which then will be displayed in the middle of the window.
 ```
 label = QLabel("Hello World")
 label.setAlignment(Qt.AlignCenter)
@@ -136,7 +136,7 @@ Instead we are using QML to declare the window.
 In this case we have got an ApplicationWindow, which we set to visible and this window contains a text-label with the the text "Hello World".  
 The text has been anchored to the middle of its parent, in this case to the ApplicationWindow. So even if you resize the window, the text stays in the middle.  
 Because this book is ment to be for desktop apps, we do not cover the usage of QML in detail.  
-QML is more usfull for mobile apps instead of desktop apps.  
+QML is more usefull for mobile apps instead of desktop apps.  
 
 ##Combining QWidget and QML
 A third possibility is to combine both QWidget and QML using the QQuickView inside a QWidget application.  

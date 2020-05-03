@@ -3,7 +3,7 @@
 
 ![lob](../images/lob.png "lob")
 
-A LOB is an application where you have got a grahical user interface and where the data is stored in a database.  
+A LOB is an application where you have got a graphical user interface and where the data is stored in a database.  
 In this case we have got a database with clients and we are able to add a new client, filter the list of clients and edit the data for a client.  
 We can also store a picture for each client.  
 
@@ -46,7 +46,7 @@ app.setPalette(p)
 ```  
 The color can be set in two different ways. You can use the RGB values ```QColor(53, 53, 53)``` or you might use a string ```QColor("#45bbe6")``` as we do in HTML.  
 
-This time the code is a little bit more structured. The main.py is still in the root folder, so a use might see it immediatly so the user knows what to start. And all other Python files are stored in the widgets folder.  
+This time the code is a little bit more structured. The main.py is still in the root folder, so a use might see it immediately so the user knows what to start. And all other Python files are stored in the widgets folder.  
 
 ## MainWindow
 The visual part of the application starts in the class MainWindow which I have stored in the file mainwindow.py.  
@@ -329,7 +329,7 @@ To open the database we use the loadDatabase method.
             self.db = TinyDB(os.path.join(self.database,"lob.json"))
             self.clients = self.db.table('Clients')
         except:
-            print("Unable to openthe database")
+            print("Unable to open the database")
 ```
 Here we load the json file from the specified path and initialize the clients array.  
 
@@ -357,7 +357,7 @@ To add a new client record we call the method add client.
         self.client["name"] = ""
         self.client_editor.reload()
 ```
-Here we are filling a record with data and insert the new record into the database. The data is written immediatly into the file without a commit. After that we re-read the clients and look for the client with the blank name to focus on.  
+Here we are filling a record with data and insert the new record into the database. The data is written immediately into the file without a commit. After that we re-read the clients and look for the client with the blank name to focus on.  
 
 
 To delete a client from the database we call the method deleteClient().  
@@ -494,7 +494,7 @@ This terminology is called **Signals and Slots**.
 The class with the signal just fires the signal and all other objects can connect to this signal and gets the event when it's fired.  
 
 ## Settings Editor
-Nothing special here. The only special here is the fact that we change the applications font immediatly when the user enters the fontsize into the fontSize Spinbox.  
+Nothing special here. The only special here is the fact that we change the applications font immediately when the user enters the fontsize into the fontSize Spinbox.  
 ```python
         self.fontSize.valueChanged.connect(self.settingsChanged)
 
@@ -580,7 +580,7 @@ class FlatButton(QLabel):
 
 ### Hyperlink
 The hyperlink is also derived from QLable and uses the ability to display HTML inside a lable.
-Here we override the method setText() and we put the text between HTML syntax, so that the hyperlink will be displyed inside the lable.  
+Here we override the method setText() and we put the text between HTML syntax, so that the hyperlink will be displayed inside the lable.  
 ```python
    def setText(self, text):
         self.text = text
