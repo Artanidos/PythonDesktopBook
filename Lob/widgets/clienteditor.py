@@ -135,7 +135,7 @@ class ClientEditor(QWidget):
         fileName = ""
         dialog = QFileDialog()
         dialog.setFileMode(QFileDialog.AnyFile)
-        dialog.setNameFilter("Images (*.png *.gif *.jpg)All (*)")
+        dialog.setNameFilter("Images (*.png *.gif *.jpg);;All (*)")
         dialog.setWindowTitle("Load Image")
         dialog.setOption(QFileDialog.DontUseNativeDialog, True)
         dialog.setAcceptMode(QFileDialog.AcceptOpen)

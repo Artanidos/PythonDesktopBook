@@ -27,7 +27,8 @@ from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkRepl
 import resources
 
 class Dashboard(QWidget):
-    createSite = pyqtSignal()
+    clients = pyqtSignal()
+    settings = pyqtSignal()
 
     def __init__(self):
         QWidget.__init__(self)
@@ -43,9 +44,13 @@ class Dashboard(QWidget):
 
         self.browser = QTextBrowser()
         self.browser.setOpenLinks(False)
-
+        text = "Good day,<br>"
+        text += "If you want to edit the clients, then please click onto the <a href='clients'>CLIENTS</a> expander.<br>"
+        text += "If you want to change some settings like the font size or the path where the data is stored, then click on the <a href='settings'>SETTINGS</a> expander."
+        self.browser.setText(text)
         self.info = QLabel()
         self.info.setText("Welcome to Lob...")
+        self.browser.anchorClicked.connect(self.navigate)
 
         space = QWidget()
         space2 = QWidget()
@@ -61,3 +66,9 @@ class Dashboard(QWidget):
         vbox.addSpacing(40)
         vbox.addWidget(self.browser)
         self.setLayout(vbox)
+
+    def navigate(self, url):
+        if url.toDisplayString() == "clients":
+            self.clients.emit()
+        elif url.toDisplayString() == "settings":
+            self.settings.emit()

@@ -27,14 +27,12 @@ import resources
 
 
 class FlatButton(QLabel):
-    clickedWithReturn = pyqtSignal(object)
     clicked = pyqtSignal()
 
     def __init__(self, svg):
         QLabel.__init__(self)
         self.svg = svg
         self._enabled = True
-        self.returncode = ""
         self.setColors()
         self.setCursor(Qt.PointingHandCursor)
 
@@ -73,10 +71,7 @@ class FlatButton(QLabel):
         if self.enabled:
             self.setPixmap(self.hover_icon)
             event.accept()
-            if not self.returncode:
-                self.clicked.emit()
-            else:
-                self.clickedWithReturn.emit(self.returncode)
+            self.clicked.emit()
 
     def enterEvent(self, event):
         if self.enabled:

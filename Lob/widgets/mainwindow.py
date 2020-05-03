@@ -126,7 +126,8 @@ class MainWindow(QMainWindow):
 
     def showDashboard(self):
         db = Dashboard()
-        db.createSite.connect(self.addClient)
+        db.clients.connect(self.showClient)
+        db.settings.connect(self.showSettings)
         self.setCentralWidget(db)
 
     def showClient(self):

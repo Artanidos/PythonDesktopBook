@@ -38,7 +38,6 @@ class HyperLink(QLabel):
         self.setCursor(Qt.PointingHandCursor)
         self.linkActivated.connect(self.linkActivated2)
 
-    @pyqtSlot(str)
     def linkActivated2(self, link):
         self.clicked.emit()
 
